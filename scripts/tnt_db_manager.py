@@ -14,7 +14,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -400,7 +400,7 @@ def export_cmd(args):
     if args.format == "json":
         export_data = {
             "branch": active_name,
-            "exported_at": datetime.now(datetime.timezone.utc).isoformat(),
+            "exported_at": datetime.now(timezone.utc).isoformat(),
             "targets_count": len(targets),
             "bug_hosts_count": len(hosts),
             "vulnerabilities_count": len(vulns),
@@ -417,7 +417,7 @@ def export_cmd(args):
         output_path = args.output or f"tnt_report_{active_name}.md"
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(f"# 🛡️ TNT PH Bug Bounty Intelligence Report\n")
-            f.write(f"**Database Branch:** `{active_name}` | **Generated:** {datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
+            f.write(f"**Database Branch:** `{active_name}` | **Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
 
             f.write(f"## 1. Executive Summary\n")
             f.write(f"- **Total Target Assets Monitored:** {len(targets)}\n")
