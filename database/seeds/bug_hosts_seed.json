@@ -1,0 +1,68 @@
+[
+  {
+    "host": "mobilelegends.com",
+    "sni_hostname": "api.mobilelegends.com",
+    "promo_category": "ML10",
+    "proxy_type": "Cloudflare",
+    "http_status": 200,
+    "is_working": 1,
+    "response_time_ms": 115.4,
+    "header_signatures": "server: cloudflare; cf-ray: ...",
+    "notes": "Verified working SNI host for TNT ML10 promo payload"
+  },
+  {
+    "host": "v16.tiktokcdn.com",
+    "sni_hostname": "v16.tiktokcdn.com",
+    "promo_category": "TIKTOK",
+    "proxy_type": "Fastly",
+    "http_status": 200,
+    "is_working": 1,
+    "response_time_ms": 84.2,
+    "header_signatures": "server: Fastly; x-served-by: cache-mnl...",
+    "notes": "Verified working host for TNT TikTok daily allocation"
+  },
+  {
+    "host": "free.facebook.com",
+    "sni_hostname": "free.facebook.com",
+    "promo_category": "FB_IG",
+    "proxy_type": "Direct_SNI",
+    "http_status": 200,
+    "is_working": 1,
+    "response_time_ms": 72.8,
+    "header_signatures": "server: proxygen-boltd",
+    "notes": "Zero-rated basic Facebook mode endpoint for TNT/Smart cellular"
+  },
+  {
+    "host": "googlevideo.com",
+    "sni_hostname": "r1---sn-nx5e6n7l.googlevideo.com",
+    "promo_category": "GIGA_VIDEO",
+    "proxy_type": "Direct_SNI",
+    "http_status": 200,
+    "is_working": 1,
+    "response_time_ms": 45.6,
+    "header_signatures": "server: gws",
+    "notes": "Endpoint for TNT Giga Video YouTube bypass testing"
+  },
+  {
+    "host": "codashop.com",
+    "sni_hostname": "ph.codashop.com",
+    "promo_category": "CODASHOP",
+    "proxy_type": "Cloudflare",
+    "http_status": 200,
+    "is_working": 1,
+    "response_time_ms": 95.1,
+    "header_signatures": "server: cloudflare; cf-cache-status: HIT",
+    "notes": "Zero-rated billing portal integration for direct carrier billing"
+  },
+  {
+    "host": "smart-gigalife-api.smart.com.ph",
+    "sni_hostname": "smart-gigalife-api.smart.com.ph",
+    "promo_category": "GENERAL_ZERO_RATED",
+    "proxy_type": "Akamai",
+    "http_status": 200,
+    "is_working": 1,
+    "response_time_ms": 61.3,
+    "header_signatures": "server: AkamaiGHost",
+    "notes": "Whitelisted cellular gateway for zero-balance app access on TNT/Smart SIMs"
+  }
+]
