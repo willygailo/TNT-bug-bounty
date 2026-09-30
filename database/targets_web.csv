@@ -1,0 +1,12 @@
+id,domain,subdomain,full_url,asset_type,cdn_provider,http_status,status,technologies,notes
+1,tntph.com,,https://tntph.com,web,Cloudflare,200,active,"Cloudflare, Nginx, Vue.js, PHP","Primary TNT Philippines commercial brand website and promo catalog"
+2,tntph.com,load.tntph.com,https://load.tntph.com,portal,Cloudflare,0,unresolvable,"Cloudflare, React, Node.js, Maya Gateway","Online e-load purchasing portal for Talk 'N Text subscribers"
+4,smart.com.ph,,https://smart.com.ph,web,Akamai,247,active,"Akamai CDN, Adobe Experience Manager (AEM), Java","Parent telecom corporate and consumer portal"
+5,smart.com.ph,my.smart.com.ph,https://my.smart.com.ph,portal,Akamai,247,active,"OAuth 2.0, Angular, WebLogic","Subscriber Self-Care account management for Smart and TNT numbers"
+10,smart.com.ph,developer.smart.com.ph,https://developer.smart.com.ph,portal,Cloudflare,0,unresolvable,"Developer Hub, Swagger/OpenAPI docs","API documentation and partner integration developer center"
+11,tntph.com,simreg.tntph.com,https://simreg.tntph.com,portal,Cloudflare,0,unresolvable,,"TNT SIM Registration portal"
+12,smart.com.ph,store.smart.com.ph,https://store.smart.com.ph,web,Akamai,200,active,,"Smart Online Store"
+13,smart.com.ph,enterprise.smart.com.ph,https://enterprise.smart.com.ph,portal,Akamai,0,unresolvable,,"Smart Enterprise B2B"
+14,smartnet.ph,,https://smartnet.ph,web,Direct,0,unresolvable,,"SmartNet Platform"
+15,maya.ph,,https://maya.ph,web,Cloudflare,200,active,,"Maya Fintech Portal"
+16,pldt.com.ph,,https://pldt.com.ph,web,Akamai,200,active,,"PLDT Parent Carrier Backbone"
