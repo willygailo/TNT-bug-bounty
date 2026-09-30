@@ -211,6 +211,46 @@ def targets_cmd(args):
         except sqlite3.IntegrityError:
             print(f"❌ Target '{args.target}' already exists in branch '{active_name}'.")
 
+    elif args.action == "import":
+        filepath = args.file
+        if not os.path.exists(filepath):
+            print(f"❌ File not found: {filepath}")
+            conn.close()
+            return
+        added = 0
+        skipped = 0
+        with open(filepath, "r", encoding="utf-8") as f:
+            for line in f:
+                target_str = line.strip().lower()
+                if not target_str or target_str.startswith("#"):
+                    continue
+                # Clean protocol if present
+                if "://" in target_str:
+                    target_str = target_str.split("://", 1)[1].split("/")[0]
+
+                root_domain = args.domain or "smart.com.ph"
+                if "tntph.com" in target_str:
+                    root_domain = "tntph.com"
+                elif "maya.ph" in target_str:
+                    root_domain = "maya.ph"
+                elif "pldt.com.ph" in target_str:
+                    root_domain = "pldt.com.ph"
+                elif "smartnet.ph" in target_str:
+                    root_domain = "smartnet.ph"
+
+                subdomain = target_str if target_str != root_domain else None
+                full_url = f"https://{target_str}"
+                try:
+                    cur.execute("""
+                        INSERT INTO targets (branch_id, domain, subdomain, full_url, asset_type, cdn_provider, status, notes)
+                        VALUES (?, ?, ?, ?, ?, 'Direct', 'active', 'Bulk imported from file')
+                    """, (active_id, root_domain, subdomain, full_url, args.type or "web"))
+                    added += 1
+                except sqlite3.IntegrityError:
+                    skipped += 1
+        conn.commit()
+        print(f"✅ Bulk import finished: {added} target(s) added to branch '{active_name}' ({skipped} skipped/duplicates).")
+
     elif args.action == "validate":
         print(f"🔍 Validating targets live status in branch '{active_name}'...")
         rows = cur.execute("SELECT id, domain, subdomain, full_url FROM targets WHERE branch_id = ?", (active_id,)).fetchall()
@@ -480,6 +520,12 @@ def main():
 
     t_val = t_sub.add_parser("validate", help="Validate live status of targets")
     t_val.set_defaults(func=targets_cmd)
+
+    t_imp = t_sub.add_parser("import", help="Bulk import targets from a text file")
+    t_imp.add_argument("file", help="Path to text file containing domains/subdomains (one per line)")
+    t_imp.add_argument("--domain", default=None, help="Default root domain")
+    t_imp.add_argument("--type", default="web", choices=["web", "api", "portal", "gateway", "payment", "cdn", "core"])
+    t_imp.set_defaults(func=targets_cmd)
 
     # hosts
     hosts_parser = subparsers.add_parser("hosts", help="Manage bug hosts / zero-rated SNI")

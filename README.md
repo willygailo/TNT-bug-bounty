@@ -23,6 +23,7 @@ TNT bug bounty/
 │   └── tnt_database.sqlite                       # Active SQLite database
 ├── scripts/
 │   └── tnt_db_manager.py                         # Full CLI management tool
+├── .gitignore                                    # Git ignore rules for DB locks, logs & reports
 ├── plan.md                                       # Operational bug bounty roadmap
 └── README.md
 ```
@@ -35,7 +36,7 @@ The database supports isolated branch environments to separate confirmed assets 
 
 | Branch | Description | Contents |
 | :--- | :--- | :--- |
-| **`main`** | Verified production targets, root domains, official APIs, and portals. | `tntph.com`, `smart.com.ph`, `my.smart.com.ph`, `api.smart.com.ph`, etc. |
+| **`main`** | Verified production targets, root domains, official APIs, and portals. | `tntph.com`, `smart.com.ph`, `my.smart.com.ph`, `api.smart.com.ph`, `codashop.com`, etc. |
 | **`recon-stage`** | Staging branch for active subdomain enumeration and automated discovery. | `store.smart.com.ph`, `maya.ph`, `pldt.com.ph`, `smartnet.ph`, `simreg.tntph.com` |
 | **`bug-hosts-branch`** | Catalog of zero-rated / SNI promo endpoints. | ML10, GIGA Video, TikTok, Free Facebook, Codashop |
 | **`vuln-triage`** | Workspace for drafting and validating vulnerability findings. | IDOR, API authorization flaws, information disclosures |
@@ -50,6 +51,7 @@ From passive HTTP header fingerprinting and live status probing:
 | :--- | :--- | :--- | :--- |
 | **`tntph.com`** | Microsoft ASP.NET (4.0.30319) | Citrix NetScaler ADC (`NSC_` cookie), Edge LB | HSTS, X-Frame-Options (SAMEORIGIN), nosniff |
 | **`store.smart.com.ph`** | Salesforce Commerce Cloud (Demandware) | Cloudflare CDN (Singapore Edge) | HSTS, CSP (frame-ancestors 'self') |
+| **`www.codashop.com`** | Nuxt.js / Vue.js SSR | Cloudflare CDN | Nuxt SSR, strict session cookies |
 | **`api.smart.com.ph`** | Telecom API Gateway | Upstream Reverse Proxy (HTTP 472 on root) | Gateway route/header protection |
 | **`my.smart.com.ph`** | Oracle / WebLogic Self-Care | Akamai GHost | Akamai Edge security |
 
@@ -62,6 +64,7 @@ Results from live HTTP/HTTPS status validation (`targets validate` & `hosts vali
 ### Target Assets:
 - **`tntph.com`** – `HTTP 200 OK` (Live commercial portal)
 - **`store.smart.com.ph`** – `HTTP 200 OK` (Live e-store portal)
+- **`www.codashop.com`** – `HTTP 200 OK` (Live carrier billing portal for MLBB)
 - **`smart.com.ph`** – `HTTP 247` (Live with Akamai edge protection)
 - **`my.smart.com.ph`** – `HTTP 247` (Live self-care portal)
 - **`api.smart.com.ph`** – `HTTP 472` (Live API gateway requiring specific routes)
@@ -73,6 +76,41 @@ Results from live HTTP/HTTPS status validation (`targets validate` & `hosts vali
 - **`free.facebook.com`** (FB/IG) – `HTTP 200 OK` ✅
 - **`v16.tiktokcdn.com`** (TikTok) – `HTTP 403 / Edge Active` ✅
 - **`codashop.com`** (Carrier Billing) – `HTTP 401 / Active` ✅
+
+---
+
+## 🗄️ Direct SQLite Database Access
+
+You can access and inspect the database directly via the `sqlite3` CLI tool:
+
+```bash
+sqlite3 database/tnt_database.sqlite
+```
+
+### Useful SQL Queries inside SQLite:
+```sql
+-- 1. Format output into clean columns with headers
+.headers on
+.mode column
+
+-- 2. List all database tables
+.tables
+
+-- 3. View all targets in the active branch
+SELECT id, domain, subdomain, asset_type, cdn_provider, http_status, status FROM targets;
+
+-- 4. View all zero-rated bug hosts (ML10, TikTok, Free Facebook)
+SELECT id, host, sni_hostname, promo_category, proxy_type, http_status, is_working FROM bug_hosts;
+
+-- 5. View database branches and status
+SELECT * FROM branches;
+
+-- 6. View logged vulnerability findings
+SELECT id, title, vuln_type, severity, cvss_score, status FROM vulnerabilities;
+
+-- 7. Exit SQLite prompt
+.quit
+```
 
 ---
 
@@ -106,8 +144,16 @@ python3 scripts/tnt_db_manager.py targets list --type api
 # Validate live HTTP connectivity of all targets in the active branch
 python3 scripts/tnt_db_manager.py targets validate
 
-# Add a newly discovered target
-python3 scripts/tnt_db_manager.py targets add gigalife.smart.com.ph --type api --cdn Cloudflare
+# Add a newly discovered target or portal URL
+python3 scripts/tnt_db_manager.py targets add www.codashop.com \
+  --domain codashop.com \
+  --subdomain www.codashop.com \
+  --url "https://www.codashop.com/en-ph/mobile-legends" \
+  --type payment \
+  --cdn Cloudflare
+
+# Bulk import subdomains from a text file (one per line)
+python3 scripts/tnt_db_manager.py targets import targets.txt
 ```
 
 ### 4. Zero-Rated SNI / Bug Hosts
