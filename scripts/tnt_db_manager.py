@@ -211,6 +211,32 @@ def targets_cmd(args):
         except sqlite3.IntegrityError:
             print(f"❌ Target '{args.target}' already exists in branch '{active_name}'.")
 
+    elif args.action == "validate":
+        print(f"🔍 Validating targets live status in branch '{active_name}'...")
+        rows = cur.execute("SELECT id, domain, subdomain, full_url FROM targets WHERE branch_id = ?", (active_id,)).fetchall()
+        for r in rows:
+            target_host = r["subdomain"] or r["domain"]
+            target_url = r["full_url"] or f"https://{target_host}"
+            req = urllib.request.Request(target_url, headers={"User-Agent": "Mozilla/5.0 (TNT-BugBounty-TargetValidator/1.0)"})
+            start_t = time.time()
+            try:
+                with urllib.request.urlopen(req, timeout=5) as response:
+                    elapsed = round((time.time() - start_t) * 1000, 2)
+                    code = response.getcode()
+                    cur.execute("UPDATE targets SET http_status = ?, status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                                (code, r["id"]))
+                    print(f"  [HTTP {code}] {target_host:<35} ({elapsed}ms)")
+            except urllib.error.HTTPError as e:
+                elapsed = round((time.time() - start_t) * 1000, 2)
+                cur.execute("UPDATE targets SET http_status = ?, status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                            (e.code, r["id"]))
+                print(f"  [HTTP {e.code}] {target_host:<35} ({elapsed}ms)")
+            except Exception as ex:
+                cur.execute("UPDATE targets SET http_status = 0, status = 'unresolvable', updated_at = CURRENT_TIMESTAMP WHERE id = ?", (r["id"],))
+                print(f"  [FAIL]     {target_host:<35} (Error: {str(ex)[:25]})")
+        conn.commit()
+        print("✅ Target validation complete.")
+
     conn.close()
 
 
@@ -451,6 +477,9 @@ def main():
     t_add.add_argument("--status", default="active")
     t_add.add_argument("--notes", default="")
     t_add.set_defaults(func=targets_cmd)
+
+    t_val = t_sub.add_parser("validate", help="Validate live status of targets")
+    t_val.set_defaults(func=targets_cmd)
 
     # hosts
     hosts_parser = subparsers.add_parser("hosts", help="Manage bug hosts / zero-rated SNI")
